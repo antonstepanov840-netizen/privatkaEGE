@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ЕГЭ по приватке Данила</title>
+<style>
+  :root{
+    --bg:#0e1117;
+    --card:#161b22;
+    --card2:#1c2430;
+    --border:#2d3748;
+    --text:#e6edf3;
+    --muted:#8b949e;
+    --accent:#7c3aed;
+    --accent2:#06b6d4;
+    --good:#22c55e;
+    --bad:#ef4444;
+    --warn:#f59e0b;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Segoe UI',Roboto,system-ui,-apple-system,sans-serif;
+    background:
+      radial-gradient(1000px 500px at 10% -10%, rgba(124,58,237,.25), transparent 60%),
+      radial-gradient(800px 400px at 100% 0%, rgba(6,182,212,.18), transparent 60%),
+      var(--bg);
+    color:var(--text);
+    min-height:100vh;
+    padding:24px 14px 60px;
+  }
+  .wrap{max-width:880px;margin:0 auto}
+  header{
+    text-align:center;
+    margin-bottom:22px;
+  }
+  header h1{
+    font-size:clamp(22px,4vw,34px);
+    margin:0 0 8px;
+    background:linear-gradient(90deg,#a78bfa,#22d3ee,#f472b6);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    font-weight:800;letter-spacing:.5px;
+  }
+  header p{color:var(--muted);margin:0;font-size:14px}
+  .panel{
+    background:linear-gradient(180deg,var(--card),var(--card2));
+    border:1px solid var(--border);
+    border-radius:16px;
+    padding:18px;
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
+    margin-bottom:16px;
+  }
+  .statusbar{
+    display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;
+    margin-bottom:10px;font-size:14px;color:var(--muted);
+  }
+  .statusbar b{color:var(--text)}
+  .chip{
+    background:#0f1720;border:1px solid var(--border);border-radius:999px;
+    padding:5px 12px;font-size:13px;
+  }
+  .chip.good{color:var(--good);border-color:rgba(34,197,94,.4)}
+  .chip.bad{color:var(--bad);border-color:rgba(239,68,68,.4)}
+  .progress{
+    height:10px;background:#0b1016;border-radius:999px;overflow:hidden;
+    border:1px solid var(--border);
+  }
+  .progress > div{
+    height:100%;width:0%;
+    background:linear-gradient(90deg,var(--accent),var(--accent2));
+    transition:width .35s ease;
+  }
+  .qhead{
+    display:flex;justify-content:space-between;align-items:center;gap:10px;
+    margin-bottom:12px;
+  }
+  .qnum{color:var(--accent2);font-weight:700;font-size:14px;letter-spacing:.5px}
+  .qtext{font-size:clamp(16px,2.4vw,19px);line-height:1.45;font-weight:600}
+  .answers{display:grid;gap:10px;margin-top:16px}
+  .answer{
+    text-align:left;cursor:pointer;
+    background:#0f1720;color:var(--text);
+    border:1px solid var(--border);border-radius:12px;
+    padding:12px 14px;font-size:15px;line-height:1.35;
+    transition:.18s ease;position:relative;
+    display:flex;gap:10px;align-items:flex-start;
+    font-family:inherit;
+  }
+  .answer:hover:not(:disabled){border-color:var(--accent);transform:translateY(-1px);background:#131c28}
+  .answer:disabled{cursor:default;opacity:.95}
+  .answer .letter{
+    flex:0 0 26px;height:26px;border-radius:8px;
+    background:#1b2635;border:1px solid var(--border);
+    display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--muted);
+  }
+  .answer.correct{border-color:var(--good);background:rgba(34,197,94,.10)}
+  .answer.correct .letter{background:rgba(34,197,94,.2);color:var(--good);border-color:rgba(34,197,94,.4)}
+  .answer.wrong{border-color:var(--bad);background:rgba(239,68,68,.10)}
+  .answer.wrong .letter{background:rgba(239,68,68,.2);color:var(--bad);border-color:rgba(239,68,68,.4)}
+  .feedback{
+    margin-top:14px;padding:12px 14px;border-radius:12px;
+    font-size:14px;line-height:1.45;
+    display:none;
+  }
+  .feedback.show{display:block}
+  .feedback.ok{background:rgba(34,197,94,.10);border:1px solid rgba(34,197,94,.35)}
+  .feedback.no{background:rgba(239,68,68,.10);border:1px solid rgba(239,68,68,.35)}
+  .feedback b{color:var(--text)}
+  .btn{
+    font-family:inherit;font-size:15px;font-weight:700;cursor:pointer;
+    border:none;border-radius:12px;padding:12px 20px;
+    background:linear-gradient(90deg,var(--accent),#4f46e5);color:#fff;
+    transition:.18s ease;letter-spacing:.3px;
+  }
+  .btn:hover{filter:brightness(1.12);transform:translateY(-1px)}
+  .btn:disabled{opacity:.5;cursor:default;transform:none;filter:none}
+  .btn.ghost{
+    background:transparent;color:var(--text);border:1px solid var(--border);
+  }
+  .btn.ghost:hover{border-color:var(--accent)}
+  .footer-nav{display:flex;justify-content:flex-end;gap:10px;margin-top:16px;flex-wrap:wrap}
+  .result{text-align:center;padding:10px 0 4px}
+  .result .big{
+    font-size:clamp(44px,10vw,72px);font-weight:900;line-height:1;
+    background:linear-gradient(90deg,#a78bfa,#22d3ee,#f472b6);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    margin:6px 0;
+  }
+  .result .verdict{font-size:18px;font-weight:700;margin:10px 0 4px}
+  .result .sub{color:var(--muted);font-size:14px;margin-bottom:18px}
+  .result .stats{
+    display:flex;gap:12px;justify-content:center;flex-wrap:wrap;margin:8px 0 20px;
+  }
+  .stat{
+    background:#0f1720;border:1px solid var(--border);border-radius:12px;
+    padding:12px 18px;min-width:130px;
+  }
+  .stat .v{font-size:22px;font-weight:800}
+  .stat .k{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.6px}
+  .hidden{display:none !important}
+  .hint{color:var(--muted);font-size:12px;margin-top:10px}
+  @media (max-width:520px){
+    .panel{padding:14px}
+    .answer{padding:11px 12px;font-size:14px}
+    .footer-nav{justify-content:stretch}
+    .footer-nav .btn{flex:1}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>ЕГЭ по приватке Данила</h1>
+    <p>30 вопросов по самому тяжёлому присмыктышу 🐙 · проверь, насколько ты шаришь за лор</p>
+  </header>
+
+  <!-- Стартовый экран -->
+  <section id="startScreen" class="panel">
+    <div style="text-align:center;padding:8px 0 4px">
+      <div style="font-size:52px;line-height:1;margin-bottom:8px">🐙</div>
+      <div class="qtext" style="margin-bottom:6px">Готов пройти аттестацию?</div>
+      <p style="color:var(--muted);font-size:14px;max-width:560px;margin:0 auto 18px">
+        Здесь 30 вопросов: музыка, игры, одноклассники, общага, интернет, пончики и фирменные словесные поносы.
+        После каждого ответа будет показан правильный вариант. В конце — процент и вердикт.
+      </p>
+      <button class="btn" id="startBtn">Начать тест</button>
+    </div>
+  </section>
+
+  <!-- Экран теста -->
+  <section id="quizScreen" class="panel hidden">
+    <div class="statusbar">
+      <span>Вопрос <b id="qCurrent">1</b> из <b>30</b></span>
+      <span id="scoreChip" class="chip good">Правильно: 0</span>
+      <span id="leftChip" class="chip">Осталось: 30</span>
+    </div>
+    <div class="progress"><div id="progressBar"></div></div>
+
+    <div style="margin-top:18px">
+      <div class="qhead">
+        <span class="qnum" id="qNum">ВОПРОС 1</span>
+      </div>
+      <div class="qtext" id="qText">…</div>
+      <div class="answers" id="answers"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="footer-nav">
+      <button class="btn" id="nextBtn" disabled>Следующий вопрос →</button>
+    </div>
+  </section>
+
+  <!-- Экран результата -->
+  <section id="resultScreen" class="panel hidden">
+    <div class="result">
+      <div class="qnum">РЕЗУЛЬТАТ</div>
+      <div class="big" id="percentBig">0%</div>
+      <div class="verdict" id="verdict">…</div>
+      <div class="sub" id="resultSub">…</div>
+      <div class="stats">
+        <div class="stat"><div class="v" id="statCorrect">0</div><div class="k">правильных</div></div>
+        <div class="stat"><div class="v" id="statWrong">0</div><div class="k">неправильных</div></div>
+        <div class="stat"><div class="v">30</div><div class="k">всего</div></div>
+      </div>
+      <button class="btn" id="restartBtn">Пройти заново</button>
+    </div>
+  </section>
+
+  <p class="hint" style="text-align:center">Сделано по мотивам экспорта чата. Все совпадения с реальными событиями — не случайны.</p>
+</div>
+
+<script>
+/* ===================== ВОПРОСЫ ===================== */
+const QUESTIONS = [
+  {
+    q: "Как в приватке чаще всего называют музыкальную исполнительницу, чьи песни Данил слушает и «проживает»?",
+    a: ["Мицуки", "Жанулька", "Макулатура", "Алена Швец"],
+    c: 1
+  },
+  {
+    q: "Какой предмет Данил называет «макулатурой», которую надо делать, а не ебланить?",
+    a: ["Физику", "Историю", "Русский/литературу", "Геометрию"],
+    c: 2
+  },
+  {
+    q: "Какой игровой босс мучил Данила почти год, пока он его не убил (достижение в Hollow Knight)?",
+    a: ["Пантеон Халлоунеста", "Сияющий", "Радианс", "Гримм"],
+    c: 0
+  },
+  {
+    q: "Что Данил называет «словесным поносом»?",
+    a: ["Домашку по русскому", "Свои длинные тирады в канале", "Ответы у доски", "Диалоги с учителями"],
+    c: 1
+  },
+  {
+    q: "Какая фраза стала мемом про пончики и походы в «Родину»?",
+    a: ["«Я за пончиком»", "«Пончик — не еда»", "«Сначала физика»", "«Дай бог клубничный»"],
+    c: 0
+  },
+  {
+    q: "Как Данил называет одноклассника, с которым у него сложные отношения и который «Кобяков»?",
+    a: ["Андрей", "Бавыкин", "Степа", "Кирилл"],
+    c: 0
+  },
+  {
+    q: "Кого Данил регулярно называет «Кобяковым», хотя это прозвище закрепилось за другим человеком?",
+    a: ["Влада Кобякова", "Андрея", "Лешу", "Ваню"],
+    c: 1
+  },
+  {
+    q: "Что Данил делает с вишлистом (фишлистом) перед Новым годом?",
+    a: ["Удаляет его", "Собирает одежду, игры и всякие хотелки", "Отдаёт маме", "Пишет в чат общаги"],
+    c: 1
+  },
+  {
+    q: "Какой напиток/еда чаще всего фигурирует в постах про «жирмаксинг»?",
+    a: ["Пельмени и пончики", "Роллы", "Шашлык", "Сырники"],
+    c: 0
+  },
+  {
+    q: "Что у Данила регулярно отключают, вызывая гневные тирады?",
+    a: ["Горячую воду и интернет", "Свет и газ", "Отопление и лифт", "Воду и газ"],
+    c: 0
+  },
+  {
+    q: "Какая компания/оператор постоянно упоминается как источник проблем с интернетом («зелёная точка»)?",
+    a: ["Мегафон", "МТС", "Зелёная точка", "Билайн"],
+    c: 2
+  },
+  {
+    q: "Как называется город, куда Данил в итоге поступает и уезжает учиться?",
+    a: ["Липецк", "Воронеж", "Челябинск", "Казань"],
+    c: 1
+  },
+  {
+    q: "Какой вуз фигурирует в постах про поступление?",
+    a: ["ВГТУ", "ВГУ", "МГУ", "МФТИ"],
+    c: 0
+  },
+  {
+    q: "Что случилось с ноутбуком Данила ближе к лету?",
+    a: ["Он его утопил", "Сломался диск, ноут отдавали в ремонт", "Его украли", "Он купил новый"],
+    c: 1
+  },
+  {
+    q: "Какая игра от Эдмунда Макмиллена упоминается с «650+ часов» и «прошёл только половину»?",
+    a: ["The Binding of Isaac", "Super Meat Boy", "End is Nigh", "Baba is You"],
+    c: 0
+  },
+  {
+    q: "Какую игру Данил называет «лучшие 750 рублей, которые я тратил на игры»?",
+    a: ["Silksong", "Hollow Knight", "Terraria", "Minecraft Dungeons"],
+    c: 1
+  },
+  {
+    q: "Что Данил говорит про поездку в Челябинск?",
+    a: ["Что туда едет на награждение/защиту проекта", "Что это его родной город", "Что там живёт Кобяков", "Что туда переезжает"],
+    c: 0
+  },
+  {
+    q: "Какой музыкальный исполнитель упоминается как «папин олимпос» и с «фитом»?",
+    a: ["Радиохед", "Папин Олимпос", "Митски", "Капсайз"],
+    c: 1
+  },
+  {
+    q: "Какая песня/исполнитель ассоциируется у Данила с фразой «I bet on losing dogs»?",
+    a: ["Митски", "Girl in Red", "Радиохед", "Земфира"],
+    c: 0
+  },
+  {
+    q: "Какой группе Данил приписывает трек «выходите бесы, мы станцуем джерси»?",
+    a: ["Радиохед", "Кис-кис", "Митски", "Земфира"],
+    c: 1
+  },
+  {
+    q: "Что Данил делает, когда ему «въебало» (плохо морально)?",
+    a: ["Идёт гулять", "Пишет длинные посты в приватку", "Играет в доту", "Звонит маме"],
+    c: 1
+  },
+  {
+    q: "Какая игра из «гача» упоминается с 78 ГБ и скоростью 11 МБ/с?",
+    a: ["Genshin Impact", "Honkai: Star Rail", "Arknights", "Wuthering Waves"],
+    c: 2
+  },
+  {
+    q: "Как Данил называет свою будущую комнату в общежитии?",
+    a: ["Дворец", "Палата в психушке", "Хижина", "Бункер"],
+    c: 1
+  },
+  {
+    q: "Что Данил постоянно теряет/забывает по утрам, когда опаздывает?",
+    a: ["Справки, ключи, телефон", "Только телефон", "Только ключи", "Ничего"],
+    c: 0
+  },
+  {
+    q: "Какой мем про «судный день» связан у Данила с 8 утра и парами?",
+    a: ["«Я не выживу»", "«Судный день»", "«День говна»", "«Всё по плану»"],
+    c: 1
+  },
+  {
+    q: "Кто из одноклассников/друзей регулярно упоминается как «баблтикин»?",
+    a: ["Кирилл", "Леша", "Ваня", "Степа"],
+    c: 0
+  },
+  {
+    q: "Что Данил говорит про Ваню (одногруппника) ближе к осени?",
+    a: ["Что тот его бесит", "Что у него «бабочки в животе» и он шарит за DnD/доту/капсайза", "Что он предатель", "Что он гей"],
+    c: 1
+  },
+  {
+    q: "Какая фраза чаще всего сопровождает посты про «зелёную точку»?",
+    a: ["«Верните интернет»", "«Спасибо, что живой»", "«Я вас ненавижу»", "«Всё по плану»"],
+    c: 0
+  },
+  {
+    q: "Что Данил делает, когда ему особенно плохо физически (температура, панкреатит)?",
+    a: ["Идёт в школу", "Меряет температуру и пишет об этом в канал", "Молчит", "Звонит Кобякову"],
+    c: 1
+  },
+  {
+    q: "Какая фраза-вердикт чаще всего звучит в конце длинных тирад Данила?",
+    a: ["«Всем доброй ночи»", "«Я вас люблю»", "«Словесный понос закончен»", "«Дайте денег»"],
+    c: 2
+  }
+];
+
+/* ===================== ЛОГИКА ===================== */
+const $ = (id) => document.getElementById(id);
+const startScreen = $("startScreen");
+const quizScreen = $("quizScreen");
+const resultScreen = $("resultScreen");
+
+let current = 0;
+let correctCount = 0;
+let answered = false;
+let wrongCount = 0;
+
+const letters = ["A","B","C","D"];
+
+function startQuiz(){
+  current = 0;
+  correctCount = 0;
+  wrongCount = 0;
+  answered = false;
+  startScreen.classList.add("hidden");
+  resultScreen.classList.add("hidden");
+  quizScreen.classList.remove("hidden");
+  renderQuestion();
+}
+
+function renderQuestion(){
+  answered = false;
+  const q = QUESTIONS[current];
+  $("qCurrent").textContent = current + 1;
+  $("qNum").textContent = "ВОПРОС " + (current + 1);
+  $("qText").textContent = q.q;
+
+  $("scoreChip").textContent = "Правильно: " + correctCount;
+  $("scoreChip").className = "chip " + (correctCount > 0 ? "good" : "");
+  $("leftChip").textContent = "Осталось: " + (QUESTIONS.length - current - 1);
+
+  const bar = $("progressBar");
+  bar.style.width = ((current) / QUESTIONS.length * 100) + "%";
+
+  const answers = $("answers");
+  answers.innerHTML = "";
+  const fb = $("feedback");
+  fb.className = "feedback";
+  fb.textContent = "";
+
+  q.a.forEach((text, i) => {
+    const btn = document.createElement("button");
+    btn.className = "answer";
+    btn.type = "button";
+    btn.innerHTML = `<span class="letter">${letters[i]}</span><span>${text}</span>`;
+    btn.addEventListener("click", () => chooseAnswer(i, btn));
+    answers.appendChild(btn);
+  });
+
+  const nextBtn = $("nextBtn");
+  nextBtn.disabled = true;
+  nextBtn.textContent = current === QUESTIONS.length - 1 ? "Показать результат →" : "Следующий вопрос →";
+}
+
+function chooseAnswer(index, btn){
+  if (answered) return;
+  answered = true;
+  const q = QUESTIONS[current];
+  const isCorrect = index === q.c;
+  const buttons = Array.from(document.querySelectorAll(".answer"));
+  buttons.forEach((b, i) => {
+    b.disabled = true;
+    if (i === q.c) b.classList.add("correct");
+    if (i === index && !isCorrect) b.classList.add("wrong");
+  });
+
+  const fb = $("feedback");
+  if (isCorrect){
+    correctCount++;
+    fb.className = "feedback ok show";
+    fb.innerHTML = "<b>Верно!</b> Это в духе приватки.";
+  } else {
+    wrongCount++;
+    fb.className = "feedback no show";
+    fb.innerHTML = "<b>Мимо.</b> Правильный ответ: <b>" + q.a[q.c] + "</b>";
+  }
+
+  $("scoreChip").textContent = "Правильно: " + correctCount;
+  $("scoreChip").className = "chip good";
+  $("nextBtn").disabled = false;
+}
+
+$("nextBtn").addEventListener("click", () => {
+  if (current < QUESTIONS.length - 1){
+    current++;
+    renderQuestion();
+  } else {
+    showResult();
+  }
+});
+
+function showResult(){
+  quizScreen.classList.add("hidden");
+  resultScreen.classList.remove("hidden");
+
+  const total = QUESTIONS.length;
+  const percent = Math.round(correctCount / total * 100);
+  $("percentBig").textContent = percent + "%";
+  $("statCorrect").textContent = correctCount;
+  $("statWrong").textContent = total - correctCount;
+  $("resultSub").textContent = `Правильных ответов: ${correctCount} из ${total}`;
+
+  let verdict = "";
+  if (percent === 100) verdict = "Ты — самый тяжёлый присмыктыш. Лор выучен наизусть.";
+  else if (percent >= 80) verdict = "Почти свой. Ты явно читал приватку, а не только листал.";
+  else if (percent >= 60) verdict = "Неплохо, но некоторые кружки ты явно проматывал.";
+  else if (percent >= 40) verdict = "Ты заходил сюда пару раз. Словесный понос прошёл мимо тебя.";
+  else if (percent >= 20) verdict = "Случайный прохожий. Даже про «зелёную точку» не в курсе.";
+  else verdict = "Ты вообще не шаришь за лор. Иди перечитай экспорт.";
+  $("verdict").textContent = verdict;
+}
+
+$("startBtn").addEventListener("click", startQuiz);
+$("restartBtn").addEventListener("click", () => {
+  resultScreen.classList.add("hidden");
+  startScreen.classList.remove("hidden");
+});
+
+/* Предзагрузка первого вопроса не нужна — стартуем по кнопке */
+</script>
+</body>
+</html>
